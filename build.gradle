@@ -4,9 +4,6 @@ apply plugin: 'maven-publish'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
 
-group = 'org.hibernate.build.gradle'
-version = '2.0.2-SNAPSHOT'
-
 defaultTasks 'build'
 
 repositories {
@@ -60,14 +57,9 @@ task sourceJar(type: Jar, dependsOn: compileJava) {
     classifier = 'sources'
 }
 
-// This is the kind of malarkey this plugin tries to address ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-if ( ! hasProperty( "JBOSS_REPO_USER" ) ) {
-    JBOSS_REPO_USER = "";
-}
-if ( ! hasProperty( "JBOSS_REPO_PASS" ) ) {
-    JBOSS_REPO_PASS = "";
-}
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def gitUrl = "https://github.com/${gitUser}/${gitProject}"
 
 publishing {
     publications {
@@ -82,7 +74,7 @@ publishing {
                 def Node root = asNode();
                 root.appendNode('name', 'Gradle Plugin for Maven Publish Authentication')
                 root.appendNode('description', 'Gradle plugin for managing authentication against maven based remote repositories')
-                root.appendNode('url', 'https://github.com/sebersole/gradle-upload-auth-plugin')
+                root.appendNode('url', gitUrl)
 
                 def org = root.appendNode( 'organization' )
                 org.appendNode( 'name', 'Hibernate.org' )
@@ -90,12 +82,12 @@ publishing {
 
                 def issues = root.appendNode( 'issueManagement' )
                 issues.appendNode( 'system', 'github' )
-                issues.appendNode( 'url', 'https://github.com/sebersole/gradle-upload-auth-plugin/issues' )
+                issues.appendNode( 'url', gitUrl )
 
                 def scm = root.appendNode( 'scm' )
-                scm.appendNode( 'url', 'https://github.com/sebersole/gradle-upload-auth-plugin' )
-                scm.appendNode( 'connection', 'scm:git:https://sebersole@github.com/sebersole/gradle-upload-auth-plugin.git' )
-                scm.appendNode( 'developerConnection', 'scm:git:git@github.com:sebersole/gradle-upload-auth-plugin.git' )
+                scm.appendNode( 'url', gitUrl )
+                scm.appendNode( 'connection', "scm:git:https://sebersole@github.com/${gitUser}/${gitProject}.git" )
+                scm.appendNode( 'developerConnection', "scm:git:git@github.com:${gitUser}/${gitProject}.git" )
 
                 def license = root.appendNode( 'licenses' ).appendNode( 'license' );
                 license.appendNode( 'name', 'GNU Lesser General Public License' )
@@ -114,14 +106,14 @@ publishing {
     repositories {
         maven {
             if ( project.version.endsWith( "SNAPSHOT" ) ) {
-                url 'https://repository.jboss.org/nexus/content/repositories/snapshots/'
+                url snapshotRepository
             }
             else {
-                url 'https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/'
+                url releaseRepository
             }
             credentials {
-                username = JBOSS_REPO_USER
-                password = JBOSS_REPO_PASS
+                username = repoUser
+                password = repoPassword
             }
         }
     }
