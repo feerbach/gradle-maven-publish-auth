@@ -119,11 +119,14 @@ public class PasswordReaderFactory {
 		@Override
 		public String readPassword(Element passwordElement) {
 			final String value = DomHelper.extractValue( passwordElement );
-			try {
-				return cipher.decryptDecorated( value, master );
-			}
-			catch (PlexusCipherException e) {
-				log.warn( "Unable to decrypt Maven password using PlexusCipher", e );
+			if (cipher.isEncryptedString(value)) {
+				try {
+					return cipher.decryptDecorated(value, master);
+				} catch (PlexusCipherException e) {
+					log.warn("Unable to decrypt Maven password using PlexusCipher", e);
+					return value;
+				}
+			} else {
 				return value;
 			}
 		}
